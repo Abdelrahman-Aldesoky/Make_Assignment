@@ -1,0 +1,183 @@
+#------------------------------------------------------------------#
+# Makefile for AVR projects  "Assignment"                          #
+# Author: Abdelrahman Mohamed Ibrahim Al-desoky.                   #
+# Date: 07/11/2023                                                 #
+#                                                                  #
+# This Makefile compiles C source files located in the src         #
+# directory into .hex and .elf files for AVR Micro controllers.    #
+# The Micro controller model and clock frequency are configurable  #
+# through the config.mk file or environment variables. The         #
+# Makefile automatically generates dependencies, so that source    #
+# files are recompiled when the header files they include are      #
+# modified.                                                        #
+#                                                                  #
+# The Makefile also includes a status report target that checks    #
+# if the .hex and .elf files were successfully produced, and       #
+# records the date and time of generation. This works on both      #
+# Windows CMD prompt and Linux. The output file is named           #
+# Status_Report.txt and is placed in the build directory specified #
+# in the variables.                                                #
+#------------------------------------------------------------------#
+
+# Assign variables based on the OS
+ifeq ($(OS),Windows_NT)
+MK_DIR = if not exist $(subst /,\,$1) mkdir $(subst /,\,$1)
+DEL_ALL = if exist $(subst /,\,$1) rmdir /s /q $(subst /,\,$1)
+DATE_CMD = %date% %time%
+REPORT = type $(subst /,\,$(M_BUILD_DIR))\Status_Report.txt
+BINARY_REPORT = if exist $(subst /,\,$(M_BUILD_DIR))\$*.txt (type $(subst /,\,$(M_BUILD_DIR))\$*.txt) \
+else (echo $*.txt not found.)
+else
+MK_DIR = mkdir -p $1
+DEL_ALL = rm -rf $1
+DATE_CMD = $(shell date)
+REPORT = cat $(M_BUILD_DIR)/Status_Report.txt
+BINARY_REPORT = if [ -f $(M_BUILD_DIR)/$*.txt ]; then cat $(M_BUILD_DIR)/$*.txt; \
+else echo "$*.txt not found."; fi
+endif
+
+# Include config.mk if it exists. It can overwrite the variables in here.
+-include config.mk
+
+# Lib Makefile Directory
+LIB_MAKE_FILE ?= ./lib 
+
+# Main Makefile Directories Variables
+M_BUILD_DIR ?= ./build
+M_DEPS_DIR ?= ./build/dependencies
+M_LIBS_DIR ?= ./build/libraries
+M_OBJS_DIR ?= ./build/objects
+M_SRCS_DIR ?= ./src
+
+# Toolchain definitions
+CC ?= avr-gcc
+OBJCOPY ?= avr-objcopy
+SIZE ?= avr-size
+
+# Microcontroller Variables
+MCU ?= atmega32
+F_CPU ?= 8000000
+
+# Compiler flags linker flag include header flag
+CFLAGS ?= -mmcu=$(MCU) -DF_CPU=$(F_CPU) -std=gnu99 -O2 -Wall
+LDFLAGS ?= -L$(M_LIBS_DIR)
+
+# Source libraries headers and objects files
+SRCS = $(wildcard $(M_SRCS_DIR)/*.c)
+OBJS = $(SRCS:.c=.o)
+DEPS = $(OBJS:.o=.d)
+
+# Conditional assignment of LIBS for cross-platform compatibility.
+# On Windows, wildcard can list .a files anytime.
+# On Unix-like systems, wildcard can only list .a files if they exist when Makefile is parsed.
+# Hence, we use find command on Unix-like systems to ensure LIBS is correctly populated.
+ifeq ($(OS),Windows_NT)
+    LIBS = $(wildcard $(M_LIBS_DIR)/*.a)
+else
+	LIBS = $(foreach dir,$(shell find $(M_LIBS_DIR) -type d),$(wildcard $(dir)/*.a))
+endif
+
+# Preserve intermediate files
+.PRECIOUS: $(M_BUILD_DIR)/%.elf $(M_OBJS_DIR)/%.o
+
+# Default target
+all: $(SRCS:$(M_SRCS_DIR)/%.c=$(M_BUILD_DIR)/%.hex)
+
+# Phony Target to always check that the lib make files is always up to date
+libs:
+	@$(MAKE) -C $(LIB_MAKE_FILE) CFLAGS="$(CFLAGS)"
+
+# Rule to compile source files into an object files also created dependencies  
+$(M_OBJS_DIR)/%.o: $(M_SRCS_DIR)/%.c | libs
+	@$(CC) $(CFLAGS) -MD -MP -MF $(M_DEPS_DIR)/$*.d -c $< -o $@
+
+# Include the dependency files
+-include $(DEPS)
+
+# Rule to make the elf files and name it same as object files
+$(M_BUILD_DIR)/%.elf: $(M_OBJS_DIR)/%.o $(LIBS)
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+	@$(SIZE) --format=avr --mcu=$(MCU) $@ > $(M_BUILD_DIR)/$*.txt
+	@echo ".elf Generation Time: $(DATE_CMD)"
+	@echo "Generated .elf: $(notdir $@)"
+
+# Rule to make the hex files and name it same as elf files
+$(M_BUILD_DIR)/%.hex: $(M_BUILD_DIR)/%.elf
+	@$(OBJCOPY) -j .text -j .data -O ihex $< $@
+	@echo ".hex Generation Time: $(DATE_CMD)"
+	@echo "Generated .hex: $(notdir $@)"
+	@$(BINARY_REPORT)
+ 
+# Rule to clean all generated files
+clean:
+	@$(call DEL_ALL,$(M_BUILD_DIR))
+	@echo "Cleanup complete. All generated files have been removed."
+
+# Status report rule
+status_report:
+	@$(call MK_DIR,$(M_BUILD_DIR))
+	@echo "Status Report" > $(M_BUILD_DIR)/Status_Report.txt
+	@echo "Date and Time of Generation: $(DATE_CMD)" >> $(M_BUILD_DIR)/Status_Report.txt
+	@echo "Generated .hex files:" >> $(M_BUILD_DIR)/Status_Report.txt
+
+ifeq ($(OS),Windows_NT)
+	@if exist "$(subst /,\,$(M_BUILD_DIR))\*.hex" ( \
+		dir /b $(subst /,\,$(M_BUILD_DIR))\*.hex >> $(subst /,\,$(M_BUILD_DIR))/Status_Report.txt; \
+	) else ( \
+		echo "No .hex files found." >> $(subst /,\,$(M_BUILD_DIR))/Status_Report.txt; \
+	) 
+else
+	@if [ -d "$(M_BUILD_DIR)" ]; then \
+		if [ "`ls -A $(M_BUILD_DIR)/*.hex 2>/dev/null`" ]; then \
+			(cd $(M_BUILD_DIR) && ls *.hex) >> $(M_BUILD_DIR)/Status_Report.txt; \
+		else \
+			echo "No .hex files found." >> $(M_BUILD_DIR)/Status_Report.txt; \
+		fi; \
+	fi
+endif
+	@$(REPORT)
+
+# Help target
+help: 
+	@echo "|----------------------------------------HELP.------------------------------------------|"
+	@echo "|                                                                                       |"
+	@echo "|This Makefile compiles C source files located in the src directory into .hex and       |"
+	@echo "|.elf files for the AVR Micro controller. The Micro controller model and clock          |"
+	@echo "|frequency are configurable through the config.mk file or environment variables. The    |"
+	@echo "|Makefile automatically generates dependencies, so that source files are recompiled     |"
+	@echo "|when any of header files they include are modified.                                    |"
+	@echo "|                                                                                       |"
+	@echo "|The Makefile also includes a status report target that checks if the .hex and .elf     |"
+	@echo "|files were successfully produced, and records the date and time of generation. This    |"
+	@echo "|works on both Windows CMD prompt and Linux. The output file is named Status_Report.txt |"
+	@echo "|and is placed in the build directory specified in the variables.                       |"
+	@echo "|                                                                                       |"
+	@echo "|Usage:                                                                                 |"
+	@echo "|  make [TARGET] [VARIABLE=value]                                                       |"
+	@echo "|                                                                                       |"
+	@echo "|Targets:                                                                               |"
+	@echo "|  all (default)           : Builds the .hex and .elf files and generates status report.|"
+	@echo "|  libs                    : Builds all the outdated libraries in my lib directory.     |"
+	@echo "|  status_report           : Generates a status report.                                 |"
+	@echo "|  clean                   : Removes all generated files so be careful.                 |"
+	@echo "|  help                    : Displays this help menu.                                   |"
+	@echo "|                                                                                       |"
+	@echo "|Variables:                                                                             |"
+	@echo "|  MCU   : The Micro controller model (default: atmega32).                              |"
+	@echo "|  F_CPU : The Micro controller clock frequency in Hz (default: 8000000).               |"
+	@echo "|  CFLAGS: Additional flags to pass to the compiler.                                    |"
+	@echo "|                                                                                       |"
+	@echo "|Examples:                                                                              |"
+	@echo "|  make                                                                                 |"
+	@echo "|  make all MCU=atmega328p F_CPU=16000000UL CFLAGS=-O2 -Wall                            |"
+	@echo "|  make libs                                                                            |"
+	@echo "|  make clean                                                                           |"
+	@echo "|  make status_report                                                                   |"
+	@echo "|  make help                                                                            |"
+	@echo "|---------------------------------------------------------------------------------------|"
+
+# Phony targets
+.PHONY: all libs clean status_report help
+
+# Delete on error so no corrupt files
+.DELETE_ON_ERROR:
