@@ -74,7 +74,7 @@ DEPS = $(OBJS:.o=.d)
 ifeq ($(OS),Windows_NT)
     LIBS = $(wildcard $(M_LIBS_DIR)/*.a)
 else
-	LIBS = $(foreach dir,$(shell find $(M_LIBS_DIR) -type d),$(wildcard $(M_LIBS_DIR)/*.a))
+    LIBS = $(foreach dir,$(shell find $(M_LIBS_DIR) -type d 2>/dev/null),$(wildcard $(M_LIBS_DIR)/*.a))
 endif
 
 # Preserve intermediate files

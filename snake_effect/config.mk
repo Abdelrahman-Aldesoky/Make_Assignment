@@ -25,6 +25,6 @@ AR := avr-ar
 OBJCOPY := avr-objcopy
 SIZE := avr-size
 
-# Compiler flags linker flag 
+# Compiler flags linker flag
 CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -std=gnu99 -O2 -Wall
 LDFLAGS = -L$(M_LIBS_DIR)
