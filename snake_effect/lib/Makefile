@@ -99,19 +99,17 @@ status_report:
 	@echo "Existing Libraries are as follows:" >> $(L_BUILD_DIR)/Libraries_Status_Report.txt
 
 ifeq ($(OS),Windows_NT)
-	@if exist "$(subst /,\,$(L_LIBS_DIR))\*" ( \
-		dir /b $(subst /,\,$(L_LIBS_DIR)) >> $(subst /,\,$(L_BUILD_DIR))/Libraries_Status_Report.txt; \
+	@if exist "$(subst /,\,$(L_LIBS_DIR))\*.a" ( \
+		dir /b $(subst /,\,$(L_LIBS_DIR))\*.a >> $(subst /,\,$(L_BUILD_DIR))/Libraries_Status_Report.txt; \
 	) else ( \
 		echo "No libraries found." >> $(subst /,\,$(L_BUILD_DIR))/Libraries_Status_Report.txt; \
 	) 
 else
-	@if [ -d "$(L_LIBS_DIR)" ]; then \
-		if [ "`ls -A $(L_LIBS_DIR)`" ]; then \
-			ls $(L_LIBS_DIR) >> $(L_BUILD_DIR)/Libraries_Status_Report.txt; \
-		else \
-			echo "No libraries found." >> $(L_BUILD_DIR)/Libraries_Status_Report.txt; \
-		fi; \
-	fi
+	@if [ "`ls $(L_LIBS_DIR) 2>/dev/null`" ]; then \
+		ls $(L_LIBS_DIR)/*.a >> $(L_BUILD_DIR)/Libraries_Status_Report.txt; \
+	else \
+		echo "No libraries found." >> $(L_BUILD_DIR)/Libraries_Status_Report.txt; \
+	fi;
 endif
 	@$(REPORT)
 

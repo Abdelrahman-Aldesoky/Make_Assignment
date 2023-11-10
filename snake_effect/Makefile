@@ -127,14 +127,13 @@ ifeq ($(OS),Windows_NT)
 		echo "No .hex files found." >> $(subst /,\,$(M_BUILD_DIR))/Status_Report.txt; \
 	) 
 else
-	@if [ -d "$(M_BUILD_DIR)" ]; then \
-		if [ "`ls -A $(M_BUILD_DIR)/*.hex 2>/dev/null`" ]; then \
-			(cd $(M_BUILD_DIR) && ls *.hex) >> $(M_BUILD_DIR)/Status_Report.txt; \
-		else \
-			echo "No .hex files found." >> $(M_BUILD_DIR)/Status_Report.txt; \
-		fi; \
+	@if [ "`ls $(M_BUILD_DIR)/*.hex 2>/dev/null`" ]; then \
+		ls $(M_BUILD_DIR)/*.hex >> $(M_BUILD_DIR)/Status_Report.txt; \
+	else \
+		echo "No .hex files found." >> $(M_BUILD_DIR)/Status_Report.txt; \
 	fi
 endif
+
 	@$(REPORT)
 
 # Help target

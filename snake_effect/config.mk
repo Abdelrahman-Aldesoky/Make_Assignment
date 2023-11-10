@@ -1,4 +1,7 @@
-# Project name currently its named same as the parent directory
+# Initially, when there was only one source file, PROJECT_NAME was set to the parent directory's name.
+# The compiled output (.hex and .elf files) was named after the parent directory.
+# After updating to compile multiple source files, this approach became unfeasible.
+# Now, .hex and .elf files are named after their respective source files in the src directory.
 PROJECT_NAME := $(notdir $(CURDIR))
 
 # Micro controller Variables
