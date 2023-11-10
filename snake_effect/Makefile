@@ -58,7 +58,7 @@ SIZE ?= avr-size
 MCU ?= atmega32
 F_CPU ?= 8000000
 
-# Compiler flags linker flag include header flag
+# Compiler flags linker flag include
 CFLAGS ?= -mmcu=$(MCU) -DF_CPU=$(F_CPU) -std=gnu99 -O2 -Wall
 LDFLAGS ?= -L$(M_LIBS_DIR)
 
@@ -74,7 +74,7 @@ DEPS = $(OBJS:.o=.d)
 ifeq ($(OS),Windows_NT)
     LIBS = $(wildcard $(M_LIBS_DIR)/*.a)
 else
-	LIBS = $(foreach dir,$(shell find $(M_LIBS_DIR) -type d),$(wildcard $(dir)/*.a))
+	LIBS = $(foreach dir,$(shell find $(M_LIBS_DIR) -type d),$(wildcard $(M_LIBS_DIR)/*.a))
 endif
 
 # Preserve intermediate files
