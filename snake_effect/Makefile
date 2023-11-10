@@ -128,7 +128,7 @@ ifeq ($(OS),Windows_NT)
 	) 
 else
 	@if [ "`ls $(M_BUILD_DIR)/*.hex 2>/dev/null`" ]; then \
-		ls $(M_BUILD_DIR)/*.hex >> $(M_BUILD_DIR)/Status_Report.txt; \
+		echo $(notdir $(wildcard $(M_BUILD_DIR)/*.hex)) >> $(M_BUILD_DIR)/Status_Report.txt; \
 	else \
 		echo "No .hex files found." >> $(M_BUILD_DIR)/Status_Report.txt; \
 	fi

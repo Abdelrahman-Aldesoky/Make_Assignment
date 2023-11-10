@@ -106,7 +106,7 @@ ifeq ($(OS),Windows_NT)
 	) 
 else
 	@if [ "`ls $(L_LIBS_DIR) 2>/dev/null`" ]; then \
-		ls $(L_LIBS_DIR)/*.a >> $(L_BUILD_DIR)/Libraries_Status_Report.txt; \
+		echo $(notdir $(wildcard $(L_LIBS_DIR)/*.a)) >> $(L_BUILD_DIR)/Libraries_Status_Report.txt; \
 	else \
 		echo "No libraries found." >> $(L_BUILD_DIR)/Libraries_Status_Report.txt; \
 	fi;
