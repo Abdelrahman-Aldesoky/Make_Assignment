@@ -93,7 +93,7 @@ clean:
 	@echo "Cleanup complete. All generated files have been removed."
 
 # Status report rule
-status_report:
+status:
 	@echo "Libraries Status Report" > $(L_BUILD_DIR)/Libraries_Status_Report.txt
 	@echo "Date and Time of Generation: $(DATE_CMD)" >> $(L_BUILD_DIR)/Libraries_Status_Report.txt
 	@echo "Existing Libraries are as follows:" >> $(L_BUILD_DIR)/Libraries_Status_Report.txt
@@ -111,6 +111,7 @@ else
 		echo "No libraries found." >> $(L_BUILD_DIR)/Libraries_Status_Report.txt; \
 	fi;
 endif
+
 	@$(REPORT)
 
 # Help target
@@ -135,7 +136,7 @@ help:
 	@echo "|                                                                                       |"
 	@echo "|Targets:                                                                               |"
 	@echo "|  all (default)           : Builds the libraries and generates status report.          |"
-	@echo "|  status_report           : Generates a status report.                                 |"
+	@echo "|  status                  : Generates a status report.                                 |"
 	@echo "|  clean                   : Removes all generated files so be careful.                 |"
 	@echo "|  help                    : Displays this help menu.                                   |"
 	@echo "|                                                                                       |"
@@ -148,9 +149,12 @@ help:
 	@echo "|  make                                                                                 |"
 	@echo "|  make all MCU=atmega328p F_CPU=16000000UL CFLAGS=-O2 -Wall                            |"
 	@echo "|  make clean                                                                           |"
-	@echo "|  make status_report                                                                   |"
+	@echo "|  make status                                                                          |"
 	@echo "|  make help                                                                            |"
 	@echo "|---------------------------------------------------------------------------------------|"
 
-.PHONY: all status_report clean help
+# Phony targets
+.PHONY: all status clean help
+
+# Delete on error so no corrupt files
 .DELETE_ON_ERROR:

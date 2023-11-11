@@ -62,10 +62,12 @@ F_CPU ?= 8000000
 CFLAGS ?= -mmcu=$(MCU) -DF_CPU=$(F_CPU) -std=gnu99 -O2 -Wall
 LDFLAGS ?= -L$(M_LIBS_DIR)
 
-# Source libraries headers and objects files
+# Sources objects dependancies elfs and hexs files
 SRCS = $(wildcard $(M_SRCS_DIR)/*.c)
-OBJS = $(SRCS:.c=.o)
-DEPS = $(OBJS:.o=.d)
+OBJS = $(patsubst $(M_SRCS_DIR)/%.c,$(M_OBJS_DIR)/%.o,$(SRCS))
+DEPS = $(patsubst $(M_SRCS_DIR)/%.c,$(M_DEPS_DIR)/%.d,$(SRCS))
+ELFS = $(patsubst $(M_SRCS_DIR)/%.c,$(M_BUILD_DIR)/%.elf,$(SRCS))
+HEXS = $(patsubst $(M_SRCS_DIR)/%.c,$(M_BUILD_DIR)/%.hex,$(SRCS))
 
 # Conditional assignment of LIBS for cross-platform compatibility.
 # On Windows, wildcard can list .a files anytime.
@@ -81,7 +83,7 @@ endif
 .PRECIOUS: $(M_BUILD_DIR)/%.elf $(M_OBJS_DIR)/%.o
 
 # Default target
-all: $(SRCS:$(M_SRCS_DIR)/%.c=$(M_BUILD_DIR)/%.hex)
+all: $(HEXS)
 
 # Phony Target to always check that the lib make files is always up to date
 libs:
@@ -114,7 +116,7 @@ clean:
 	@echo "Cleanup complete. All generated files have been removed."
 
 # Status report rule
-status_report:
+status:
 	@$(call MK_DIR,$(M_BUILD_DIR))
 	@echo "Status Report" > $(M_BUILD_DIR)/Status_Report.txt
 	@echo "Date and Time of Generation: $(DATE_CMD)" >> $(M_BUILD_DIR)/Status_Report.txt
@@ -157,7 +159,7 @@ help:
 	@echo "|Targets:                                                                               |"
 	@echo "|  all (default)           : Builds the .hex and .elf files and generates status report.|"
 	@echo "|  libs                    : Builds all the outdated libraries in my lib directory.     |"
-	@echo "|  status_report           : Generates a status report.                                 |"
+	@echo "|  status                  : Generates a status report.                                 |"
 	@echo "|  clean                   : Removes all generated files so be careful.                 |"
 	@echo "|  help                    : Displays this help menu.                                   |"
 	@echo "|                                                                                       |"
@@ -171,12 +173,12 @@ help:
 	@echo "|  make all MCU=atmega328p F_CPU=16000000UL CFLAGS=-O2 -Wall                            |"
 	@echo "|  make libs                                                                            |"
 	@echo "|  make clean                                                                           |"
-	@echo "|  make status_report                                                                   |"
+	@echo "|  make status                                                                          |"
 	@echo "|  make help                                                                            |"
 	@echo "|---------------------------------------------------------------------------------------|"
 
 # Phony targets
-.PHONY: all libs clean status_report help
+.PHONY: all libs clean status help
 
 # Delete on error so no corrupt files
 .DELETE_ON_ERROR:
