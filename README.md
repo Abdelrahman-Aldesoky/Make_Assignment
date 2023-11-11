@@ -1,4 +1,4 @@
-# Make Project Assignment
+# Make Assignment
 
 This project contains two Makefiles. They compile C source files into .hex, .elf, and .a files for AVR Microcontrollers. <br>
 The Microcontroller model and clock frequency are configurable. <br>
