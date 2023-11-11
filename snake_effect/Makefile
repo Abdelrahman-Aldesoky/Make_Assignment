@@ -24,14 +24,19 @@ ifeq ($(OS),Windows_NT)
 MK_DIR = if not exist $(subst /,\,$1) mkdir $(subst /,\,$1)
 DEL_ALL = if exist $(subst /,\,$1) rmdir /s /q $(subst /,\,$1)
 DATE_CMD = %date% %time%
-REPORT = type $(subst /,\,$(M_BUILD_DIR))\Status_Report.txt
-BINARY_REPORT = if exist $(subst /,\,$(M_BUILD_DIR))\$*.txt (type $(subst /,\,$(M_BUILD_DIR))\$*.txt) \
+REPORT = if exist $(subst /,\,$(M_BUILD_DIR))\Status_Report.txt \
+(type $(subst /,\,$(M_BUILD_DIR))\Status_Report.txt) \
+else (echo Nothing to Report.)
+BINARY_REPORT = if exist $(subst /,\,$(M_BUILD_DIR))\$*.txt \
+(type $(subst /,\,$(M_BUILD_DIR))\$*.txt) \
 else (echo $*.txt not found.)
 else
 MK_DIR = mkdir -p $1
 DEL_ALL = rm -rf $1
 DATE_CMD = $(shell date)
-REPORT = cat $(M_BUILD_DIR)/Status_Report.txt
+REPORT = if [ -f $(M_BUILD_DIR)/Status_Report.txt ]; \
+then cat $(M_BUILD_DIR)/Status_Report.txt; \
+else echo "Nothing to Report."; fi
 BINARY_REPORT = if [ -f $(M_BUILD_DIR)/$*.txt ]; then cat $(M_BUILD_DIR)/$*.txt; \
 else echo "$*.txt not found."; fi
 endif
@@ -117,19 +122,7 @@ clean:
 
 # Status rule
 status:
-ifeq ($(OS),Windows_NT)
-	@if exist "$(subst /,\,$(M_BUILD_DIR))\*.hex" ( \
-		@$(REPORT) \
-	) else ( \
-		echo "No .hex files found." >> \
-	) 
-else
-	@if [ "`ls $(M_BUILD_DIR)/*.hex 2>/dev/null`" ]; then \
-		@$(REPORT) \
-	else \
-		echo "No .hex files found." \
-	fi
-endif
+	@$(REPORT)
 
 # Help target
 help: 

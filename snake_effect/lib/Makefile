@@ -24,12 +24,16 @@ ifeq ($(OS),Windows_NT)
 MK_DIR = if not exist $(subst /,\,$1) mkdir $(subst /,\,$1)
 DEL_ALL = if exist $(subst /,\,$1) rmdir /s /q $(subst /,\,$1)
 DATE_CMD = %date% %time%
-REPORT = type $(subst /,\,$(L_BUILD_DIR))\Libraries_Status_Report.txt
+REPORT = if exist $(subst /,\,$(L_BUILD_DIR))\Libraries_Status_Report.txt \
+(type $(subst /,\,$(L_BUILD_DIR))\Libraries_Status_Report.txt) \
+else (echo Nothing to Report.)
 else
 MK_DIR = mkdir -p $1
 DEL_ALL = rm -rf $1
 DATE_CMD = $(shell date)
-REPORT = cat $(L_BUILD_DIR)/Libraries_Status_Report.txt
+REPORT = if [ -f $(L_BUILD_DIR)/Libraries_Status_Report.txt ]; \
+then cat $(L_BUILD_DIR)/Libraries_Status_Report.txt; \
+else echo "Nothing to Report."; fi
 endif
 
 # Include config.mk if it exists you can assign most of the variables there and it will overwrite the ones in here
@@ -94,19 +98,7 @@ clean:
 
 # Status report rule
 status:
-ifeq ($(OS),Windows_NT)
-	@if exist "$(subst /,\,$(L_LIBS_DIR))\*.a" ( \
-		@$(REPORT) \
-	) else ( \
-		echo "No libraries found." \
-	) 
-else
-	@if [ "`ls $(L_LIBS_DIR) 2>/dev/null`" ]; then \
-		@$(REPORT) \
-	else \
-		echo "No libraries found." \
-	fi;
-endif
+	@$(REPORT)
 
 # Help target
 help:
