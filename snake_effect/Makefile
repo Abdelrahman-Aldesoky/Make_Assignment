@@ -83,14 +83,14 @@ endif
 .PRECIOUS: $(M_BUILD_DIR)/%.elf $(M_OBJS_DIR)/%.o
 
 # Default target
-all: $(HEXS)
+all: libs $(HEXS)
 
 # Phony Target to always check that the lib make files is always up to date
 libs:
 	@$(MAKE) -C $(LIB_MAKE_FILE) CFLAGS="$(CFLAGS)"
 
 # Rule to compile source files into an object files also created dependencies  
-$(M_OBJS_DIR)/%.o: $(M_SRCS_DIR)/%.c | libs
+$(M_OBJS_DIR)/%.o: $(M_SRCS_DIR)/%.c
 	@$(CC) $(CFLAGS) -MD -MP -MF $(M_DEPS_DIR)/$*.d -c $< -o $@
 
 # Include the dependency files
