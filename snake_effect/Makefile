@@ -11,7 +11,7 @@
 # files are recompiled when the header files they include are      #
 # modified.                                                        #
 #                                                                  #
-# The Makefile also includes a status report target that checks    #
+# The Makefile also includes a status target that checks           #
 # if the .hex and .elf files were successfully produced, and       #
 # records the date and time of generation. This works on both      #
 # Windows CMD prompt and Linux. The output file is named           #
@@ -115,7 +115,7 @@ clean:
 	@$(call DEL_ALL,$(M_BUILD_DIR))
 	@echo "Cleanup complete. All generated files have been removed."
 
-# Status report rule
+# Status rule
 status:
 	@$(call MK_DIR,$(M_BUILD_DIR))
 	@echo "Status Report" > $(M_BUILD_DIR)/Status_Report.txt
@@ -148,7 +148,7 @@ help:
 	@echo "|Makefile automatically generates dependencies, so that source files are recompiled     |"
 	@echo "|when any of header files they include are modified.                                    |"
 	@echo "|                                                                                       |"
-	@echo "|The Makefile also includes a status report target that checks if the .hex and .elf     |"
+	@echo "|The Makefile also includes a status target that checks if the .hex and .elf            |"
 	@echo "|files were successfully produced, and records the date and time of generation. This    |"
 	@echo "|works on both Windows CMD prompt and Linux. The output file is named Status_Report.txt |"
 	@echo "|and is placed in the build directory specified in the variables.                       |"
@@ -157,7 +157,7 @@ help:
 	@echo "|  make [TARGET] [VARIABLE=value]                                                       |"
 	@echo "|                                                                                       |"
 	@echo "|Targets:                                                                               |"
-	@echo "|  all (default)           : Builds the .hex and .elf files and generates status report.|"
+	@echo "|  all (default)           : Builds the .hex and .elf.                                  |"
 	@echo "|  libs                    : Builds all the outdated libraries in my lib directory.     |"
 	@echo "|  status                  : Generates a status report.                                 |"
 	@echo "|  clean                   : Removes all generated files so be careful.                 |"

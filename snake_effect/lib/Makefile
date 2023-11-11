@@ -11,12 +11,12 @@
 # files are recompiled when the header files they include are      #
 # modified.                                                        #
 #                                                                  #
-# The Makefile also includes a status report target that checks    #
+# The Makefile also includes a status target that checks           #
 # if the libraries were successfully produced, and records the     #
 # date and time of generation and all libraries names. This works  #
 # on both Windows CMD prompt and Linux. The output file is named   #
-# Libraries_Status_Report.txt and is placed in the libraries       #
-# directory inside the build directory specified in the variables. #
+# Libraries_Status_Report.txt and is placed in the build           #
+# directory specified in the variables.                            #
 #------------------------------------------------------------------#
 
 # Assign variables based on the OS
@@ -128,8 +128,8 @@ help:
 	@echo "|successfully produced, and records the date and time of generation and all library     |"
 	@echo "|names. This works on both Windows CMD prompt and Linux. The output file is named       |"
 	@echo "|Libraries_Status_Report.txt and is placed in the libraries directory inside the build  |"
-	@echo "|directory specified in the variables. The status_report target is the default target   |"
-	@echo "|and it builds all the libraries before generating the status report.                   |"
+	@echo "|directory specified in the variables. The all target is the default target it builds   |"
+	@echo "|all the libraries that needs to be rebuilt.                                            |"
 	@echo "|                                                                                       |"
 	@echo "|Usage:                                                                                 |"
 	@echo "|  make [TARGET] [VARIABLE=value]                                                       |"
