@@ -53,7 +53,8 @@ L_LIBS_DIR := ../build/libraries
 L_OBJS_DIR := ../build/objects
 
 # Source files
-L_SRCS := $(wildcard *.c)
+L_SRCS = $(wildcard *.c)
+L_DEPS = $(wildcard $(L_DEPS_DIR)/*.d)
 
 # Use the part of the filename before the underscore
 BASE_NAMES := $(foreach src,$(L_SRCS),$(firstword $(subst _, ,$(basename $(src)))))
@@ -63,29 +64,28 @@ OBJS := $(addprefix $(L_OBJS_DIR)/, $(addsuffix .o, $(BASE_NAMES)))
 DEPS := $(addprefix $(L_DEPS_DIR)/, $(addsuffix .d, $(BASE_NAMES)))
 LIBS := $(addprefix $(L_LIBS_DIR)/lib, $(addsuffix .a, $(BASE_NAMES)))
 
+# Preserve intermediate files
+.PRECIOUS: $(L_OBJS_DIR)/%.o
+
 # Rule to create all (Default Rule)
 all: $(LIBS)
 
-# Rule to create static libraries
-$(L_LIBS_DIR)/lib%.a : $(L_OBJS_DIR)/%.o
-	@$(call MK_DIR,$(L_LIBS_DIR))
-	@$(AR) rcs $@ $<
-	@echo "Library Generation Time: $(DATE_CMD)"
-	@echo "Generated Library: $(notdir $@)"
-
 # Rule to create dependency files
-$(L_DEPS_DIR)/%.d : %*.c
+$(L_OBJS_DIR)/%.o: %*.c
 	@$(call MK_DIR,$(L_BUILD_DIR))
+	@$(call MK_DIR,$(L_OBJS_DIR))
 	@$(call MK_DIR,$(L_DEPS_DIR))
-	@$(CC) -M -MT '$(L_OBJS_DIR)/$*.o' $< -MF $@
+	@$(call MK_DIR,$(L_LIBS_DIR))
+	@$(CC) $(CFLAGS) -MD -MP -MF $(L_DEPS_DIR)/$*.d -c $< -o $@
 
 # Include dependencies
--include $(DEPS)
+-include $(L_DEPS)
 
-# Rule to create object files
-$(L_OBJS_DIR)/%.o : %*.c
-	@$(call MK_DIR,$(L_OBJS_DIR))
-	@$(CC) $(CFLAGS) -c $< -o $@
+# Rule to create static libraries
+$(L_LIBS_DIR)/lib%.a : $(L_OBJS_DIR)/%.o
+	@$(AR) rcs $@ $<
+	@echo "Generated Library: $(notdir $@) Generation Time: $(DATE_CMD)" >> $(L_BUILD_DIR)/Libraries_Status_Report.txt
+	@echo "Generated Library: $(notdir $@) Generation Time: $(DATE_CMD)"
 
 # Rule to clean all generated files
 clean:
@@ -94,25 +94,19 @@ clean:
 
 # Status report rule
 status:
-	@echo "Libraries Status Report" > $(L_BUILD_DIR)/Libraries_Status_Report.txt
-	@echo "Date and Time of Generation: $(DATE_CMD)" >> $(L_BUILD_DIR)/Libraries_Status_Report.txt
-	@echo "Existing Libraries are as follows:" >> $(L_BUILD_DIR)/Libraries_Status_Report.txt
-
 ifeq ($(OS),Windows_NT)
 	@if exist "$(subst /,\,$(L_LIBS_DIR))\*.a" ( \
-		dir /b $(subst /,\,$(L_LIBS_DIR))\*.a >> $(subst /,\,$(L_BUILD_DIR))/Libraries_Status_Report.txt; \
+		@$(REPORT) \
 	) else ( \
-		echo "No libraries found." >> $(subst /,\,$(L_BUILD_DIR))/Libraries_Status_Report.txt; \
+		echo "No libraries found." \
 	) 
 else
 	@if [ "`ls $(L_LIBS_DIR) 2>/dev/null`" ]; then \
-		echo $(notdir $(wildcard $(L_LIBS_DIR)/*.a)) >> $(L_BUILD_DIR)/Libraries_Status_Report.txt; \
+		@$(REPORT) \
 	else \
-		echo "No libraries found." >> $(L_BUILD_DIR)/Libraries_Status_Report.txt; \
+		echo "No libraries found." \
 	fi;
 endif
-
-	@$(REPORT)
 
 # Help target
 help:

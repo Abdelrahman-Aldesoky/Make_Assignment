@@ -100,14 +100,14 @@ $(M_OBJS_DIR)/%.o: $(M_SRCS_DIR)/%.c
 $(M_BUILD_DIR)/%.elf: $(M_OBJS_DIR)/%.o $(LIBS)
 	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 	@$(SIZE) --format=avr --mcu=$(MCU) $@ > $(M_BUILD_DIR)/$*.txt
-	@echo ".elf Generation Time: $(DATE_CMD)"
-	@echo "Generated .elf: $(notdir $@)"
+	@echo "Generated Binary: $(notdir $@) Generation Time: $(DATE_CMD)" >> $(M_BUILD_DIR)/Status_Report.txt
+	@echo "Generated Binary: $(notdir $@) Generation Time: $(DATE_CMD)"
 
 # Rule to make the hex files and name it same as elf files
 $(M_BUILD_DIR)/%.hex: $(M_BUILD_DIR)/%.elf
 	@$(OBJCOPY) -j .text -j .data -O ihex $< $@
-	@echo ".hex Generation Time: $(DATE_CMD)"
-	@echo "Generated .hex: $(notdir $@)"
+	@echo "Generated Binary: $(notdir $@) Generation Time: $(DATE_CMD)" >> $(M_BUILD_DIR)/Status_Report.txt
+	@echo "Generated Binary: $(notdir $@) Generation Time: $(DATE_CMD)"
 	@$(BINARY_REPORT)
  
 # Rule to clean all generated files
@@ -117,26 +117,19 @@ clean:
 
 # Status rule
 status:
-	@$(call MK_DIR,$(M_BUILD_DIR))
-	@echo "Status Report" > $(M_BUILD_DIR)/Status_Report.txt
-	@echo "Date and Time of Generation: $(DATE_CMD)" >> $(M_BUILD_DIR)/Status_Report.txt
-	@echo "Generated .hex files:" >> $(M_BUILD_DIR)/Status_Report.txt
-
 ifeq ($(OS),Windows_NT)
 	@if exist "$(subst /,\,$(M_BUILD_DIR))\*.hex" ( \
-		dir /b $(subst /,\,$(M_BUILD_DIR))\*.hex >> $(subst /,\,$(M_BUILD_DIR))/Status_Report.txt; \
+		@$(REPORT) \
 	) else ( \
-		echo "No .hex files found." >> $(subst /,\,$(M_BUILD_DIR))/Status_Report.txt; \
+		echo "No .hex files found." >> \
 	) 
 else
 	@if [ "`ls $(M_BUILD_DIR)/*.hex 2>/dev/null`" ]; then \
-		echo $(notdir $(wildcard $(M_BUILD_DIR)/*.hex)) >> $(M_BUILD_DIR)/Status_Report.txt; \
+		@$(REPORT) \
 	else \
-		echo "No .hex files found." >> $(M_BUILD_DIR)/Status_Report.txt; \
+		echo "No .hex files found." \
 	fi
 endif
-
-	@$(REPORT)
 
 # Help target
 help: 
