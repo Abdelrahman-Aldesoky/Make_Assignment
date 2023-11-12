@@ -58,7 +58,6 @@ L_OBJS_DIR := ../build/objects
 
 # Source files
 L_SRCS = $(wildcard *.c)
-L_DEPS = $(wildcard $(L_DEPS_DIR)/*.d)
 
 # Use the part of the filename before the underscore
 BASE_NAMES := $(foreach src,$(L_SRCS),$(firstword $(subst _, ,$(basename $(src)))))
@@ -74,7 +73,7 @@ LIBS := $(addprefix $(L_LIBS_DIR)/lib, $(addsuffix .a, $(BASE_NAMES)))
 # Rule to create all (Default Rule)
 all: $(LIBS)
 
-# Rule to create dependency files
+# Rule to compile source files into an object files also creates dependencies 
 $(L_OBJS_DIR)/%.o: %*.c
 	@$(call MK_DIR,$(L_BUILD_DIR))
 	@$(call MK_DIR,$(L_OBJS_DIR))
@@ -83,7 +82,7 @@ $(L_OBJS_DIR)/%.o: %*.c
 	@$(CC) $(CFLAGS) -MD -MP -MF $(L_DEPS_DIR)/$*.d -c $< -o $@
 
 # Include dependencies
--include $(L_DEPS)
+-include $(DEPS)
 
 # Rule to create static libraries
 $(L_LIBS_DIR)/lib%.a : $(L_OBJS_DIR)/%.o

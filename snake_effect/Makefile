@@ -90,11 +90,11 @@ endif
 # Default target
 all: libs $(HEXS)
 
-# Phony Target to always check that the lib make files is always up to date
+# Phony Target to always check if the lib makefile is up to date or not
 libs:
 	@$(MAKE) -C $(LIB_MAKE_FILE) CFLAGS="$(CFLAGS)"
 
-# Rule to compile source files into an object files also created dependencies  
+# Rule to compile source files into an object files also creates dependencies  
 $(M_OBJS_DIR)/%.o: $(M_SRCS_DIR)/%.c
 	@$(CC) $(CFLAGS) -MD -MP -MF $(M_DEPS_DIR)/$*.d -c $< -o $@
 
