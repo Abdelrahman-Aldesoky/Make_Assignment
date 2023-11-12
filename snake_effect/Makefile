@@ -27,9 +27,9 @@ DATE_CMD = %date% %time%
 REPORT = if exist $(subst /,\,$(M_BUILD_DIR))\Status_Report.txt \
 (type $(subst /,\,$(M_BUILD_DIR))\Status_Report.txt) \
 else (echo Nothing to Report.)
-BINARY_REPORT = if exist $(subst /,\,$(M_BUILD_DIR))\$*.txt \
-(type $(subst /,\,$(M_BUILD_DIR))\$*.txt) \
-else (echo $*.txt not found.)
+BINARY_REPORT = if exist $(subst /,\,$(M_BUILD_DIR))\binaryReport_$*.txt \
+(type $(subst /,\,$(M_BUILD_DIR))\binaryReport_$*.txt) \
+else (echo binaryReport_$*.txt not found.)
 else
 MK_DIR = mkdir -p $1
 DEL_ALL = rm -rf $1
@@ -37,8 +37,8 @@ DATE_CMD = $(shell date)
 REPORT = if [ -f $(M_BUILD_DIR)/Status_Report.txt ]; \
 then cat $(M_BUILD_DIR)/Status_Report.txt; \
 else echo "Nothing to Report."; fi
-BINARY_REPORT = if [ -f $(M_BUILD_DIR)/$*.txt ]; then cat $(M_BUILD_DIR)/$*.txt; \
-else echo "$*.txt not found."; fi
+BINARY_REPORT = if [ -f $(M_BUILD_DIR)/binaryReport_$*.txt ]; then cat $(M_BUILD_DIR)/binaryReport_$*.txt; \
+else echo "binaryReport_$*.txt not found."; fi
 endif
 
 # Include config.mk if it exists. It can overwrite the variables in here.
@@ -104,7 +104,7 @@ $(M_OBJS_DIR)/%.o: $(M_SRCS_DIR)/%.c
 # Rule to create .elf files also generates binary report with the same .c file name
 $(M_BUILD_DIR)/%.elf: $(M_OBJS_DIR)/%.o $(LIBS)
 	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBS)
-	@$(SIZE) --format=avr --mcu=$(MCU) $@ > $(M_BUILD_DIR)/$*.txt
+	@$(SIZE) --format=avr --mcu=$(MCU) $@ > $(M_BUILD_DIR)/binaryReport_$*.txt
 	@echo "Generated Binary: $(notdir $@) Generation Time: $(DATE_CMD)" >> $(M_BUILD_DIR)/Status_Report.txt
 	@echo "Generated Binary: $(notdir $@) Generation Time: $(DATE_CMD)"
 
