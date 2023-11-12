@@ -103,7 +103,7 @@ $(M_OBJS_DIR)/%.o: $(M_SRCS_DIR)/%.c
 
 # Rule to make the elf files and name it same as object files
 $(M_BUILD_DIR)/%.elf: $(M_OBJS_DIR)/%.o $(LIBS)
-	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBS)
 	@$(SIZE) --format=avr --mcu=$(MCU) $@ > $(M_BUILD_DIR)/$*.txt
 	@echo "Generated Binary: $(notdir $@) Generation Time: $(DATE_CMD)" >> $(M_BUILD_DIR)/Status_Report.txt
 	@echo "Generated Binary: $(notdir $@) Generation Time: $(DATE_CMD)"
