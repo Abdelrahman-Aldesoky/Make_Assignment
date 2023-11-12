@@ -39,6 +39,13 @@ endif
 # Include config.mk if it exists you can assign most of the variables there and it will overwrite the ones in here
 -include ../config.mk
 
+# Lib Makefile Directories Variables
+L_BUILD_DIR ?= ../build
+L_DEPS_DIR ?= ../build/dependencies
+L_LIBS_DIR ?= ../build/libraries
+L_OBJS_DIR ?= ../build/objects
+L_SRCS_DIR ?= .
+
 # Toolchain definitions
 CC ?= avr-gcc
 AR ?= avr-ar
@@ -50,19 +57,13 @@ F_CPU ?= 8000000
 # Compiler flags
 CFLAGS ?= -mmcu=$(MCU) -DF_CPU=$(F_CPU) -std=gnu99 -O2 -Wall
 
-# Lib Makefile Directories Variables
-L_BUILD_DIR := ../build
-L_DEPS_DIR := ../build/dependencies
-L_LIBS_DIR := ../build/libraries
-L_OBJS_DIR := ../build/objects
-
 # Source files
-L_SRCS = $(wildcard *.c)
+L_SRCS = $(wildcard $(L_SRCS_DIR)/*.c)
 
 # Use the part of the filename before the underscore
-BASE_NAMES := $(foreach src,$(L_SRCS),$(firstword $(subst _, ,$(basename $(src)))))
+BASE_NAMES := $(foreach src,$(notdir $(L_SRCS)),$(firstword $(subst _, ,$(basename $(src)))))
 
-# Object files
+# Objects dependencies and libraries files
 OBJS := $(addprefix $(L_OBJS_DIR)/, $(addsuffix .o, $(BASE_NAMES)))
 DEPS := $(addprefix $(L_DEPS_DIR)/, $(addsuffix .d, $(BASE_NAMES)))
 LIBS := $(addprefix $(L_LIBS_DIR)/lib, $(addsuffix .a, $(BASE_NAMES)))
@@ -70,11 +71,11 @@ LIBS := $(addprefix $(L_LIBS_DIR)/lib, $(addsuffix .a, $(BASE_NAMES)))
 # Preserve intermediate files
 .PRECIOUS: $(L_OBJS_DIR)/%.o
 
-# Rule to create all (Default Rule)
+# Rule to create all (Default target)
 all: $(LIBS)
 
 # Rule to compile source files into an object files also creates dependencies 
-$(L_OBJS_DIR)/%.o: %*.c
+$(L_OBJS_DIR)/%.o: $(L_SRCS_DIR)/%*.c
 	@$(call MK_DIR,$(L_BUILD_DIR))
 	@$(call MK_DIR,$(L_OBJS_DIR))
 	@$(call MK_DIR,$(L_DEPS_DIR))
@@ -95,7 +96,7 @@ clean:
 	@$(call DEL_ALL,$(L_BUILD_DIR))
 	@echo "Cleanup complete. All generated files have been removed."
 
-# Status report rule
+# Status rule
 status:
 	@$(REPORT)
 
@@ -120,7 +121,7 @@ help:
 	@echo "|  make [TARGET] [VARIABLE=value]                                                       |"
 	@echo "|                                                                                       |"
 	@echo "|Targets:                                                                               |"
-	@echo "|  all (default)           : Builds the libraries and generates status report.          |"
+	@echo "|  all (default)           : Builds the libraries.                                      |"
 	@echo "|  status                  : Generates a status report.                                 |"
 	@echo "|  clean                   : Removes all generated files so be careful.                 |"
 	@echo "|  help                    : Displays this help menu.                                   |"
@@ -132,14 +133,15 @@ help:
 	@echo "|                                                                                       |"
 	@echo "|Examples:                                                                              |"
 	@echo "|  make                                                                                 |"
-	@echo "|  make all MCU=atmega328p F_CPU=16000000UL CFLAGS=-O2 -Wall                            |"
+	@echo "|  make F_CPU=16000000 MCU=atmega328p                                                   |"
+	@echo "|  make all CFLAGS="-mmcu=atmega328p -DF_CPU=16000000 -std=gnu99 -O2 -Wall"             |"
 	@echo "|  make clean                                                                           |"
 	@echo "|  make status                                                                          |"
 	@echo "|  make help                                                                            |"
 	@echo "|---------------------------------------------------------------------------------------|"
 
 # Phony targets
-.PHONY: all status clean help
+.PHONY: all clean status help
 
 # Delete on error so no corrupt files
 .DELETE_ON_ERROR:

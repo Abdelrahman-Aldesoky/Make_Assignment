@@ -59,7 +59,7 @@ CC ?= avr-gcc
 OBJCOPY ?= avr-objcopy
 SIZE ?= avr-size
 
-# Microcontroller Variables
+# Micro controller Variables
 MCU ?= atmega32
 F_CPU ?= 8000000
 
@@ -67,7 +67,7 @@ F_CPU ?= 8000000
 CFLAGS ?= -mmcu=$(MCU) -DF_CPU=$(F_CPU) -std=gnu99 -O2 -Wall
 LDFLAGS ?= -L$(M_LIBS_DIR)
 
-# Sources objects dependancies elfs and hexs files
+# Sources objects dependencies elfs and hexs files
 SRCS = $(wildcard $(M_SRCS_DIR)/*.c)
 OBJS = $(patsubst $(M_SRCS_DIR)/%.c,$(M_OBJS_DIR)/%.o,$(SRCS))
 DEPS = $(patsubst $(M_SRCS_DIR)/%.c,$(M_DEPS_DIR)/%.d,$(SRCS))
@@ -87,7 +87,7 @@ endif
 # Preserve intermediate files
 .PRECIOUS: $(M_BUILD_DIR)/%.elf $(M_OBJS_DIR)/%.o
 
-# Default target
+# Rule to create all (Default target)
 all: libs $(HEXS)
 
 # Phony Target to always check if the lib makefile is up to date or not
@@ -98,17 +98,17 @@ libs:
 $(M_OBJS_DIR)/%.o: $(M_SRCS_DIR)/%.c
 	@$(CC) $(CFLAGS) -MD -MP -MF $(M_DEPS_DIR)/$*.d -c $< -o $@
 
-# Include the dependency files
+# Include dependencies
 -include $(DEPS)
 
-# Rule to make the elf files and name it same as object files
+# Rule to create .elf files also generates binary report with the same .c file name
 $(M_BUILD_DIR)/%.elf: $(M_OBJS_DIR)/%.o $(LIBS)
 	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBS)
 	@$(SIZE) --format=avr --mcu=$(MCU) $@ > $(M_BUILD_DIR)/$*.txt
 	@echo "Generated Binary: $(notdir $@) Generation Time: $(DATE_CMD)" >> $(M_BUILD_DIR)/Status_Report.txt
 	@echo "Generated Binary: $(notdir $@) Generation Time: $(DATE_CMD)"
 
-# Rule to make the hex files and name it same as elf files
+# Rule to create .hex files 
 $(M_BUILD_DIR)/%.hex: $(M_BUILD_DIR)/%.elf
 	@$(OBJCOPY) -j .text -j .data -O ihex $< $@
 	@echo "Generated Binary: $(notdir $@) Generation Time: $(DATE_CMD)" >> $(M_BUILD_DIR)/Status_Report.txt
@@ -156,7 +156,8 @@ help:
 	@echo "|                                                                                       |"
 	@echo "|Examples:                                                                              |"
 	@echo "|  make                                                                                 |"
-	@echo "|  make all MCU=atmega328p F_CPU=16000000UL CFLAGS=-O2 -Wall                            |"
+	@echo "|  make F_CPU=16000000 MCU=atmega328p                                                   |"
+	@echo "|  make all CFLAGS="-mmcu=atmega328p -DF_CPU=16000000 -std=gnu99 -O2 -Wall"             |"
 	@echo "|  make libs                                                                            |"
 	@echo "|  make clean                                                                           |"
 	@echo "|  make status                                                                          |"
